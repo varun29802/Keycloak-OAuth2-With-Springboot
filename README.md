@@ -1,5 +1,3 @@
-Here's the updated README.md file incorporating your changes and explaining the host file modifications:
-
 # 🔐 Spring Boot OAuth2 Integration with Keycloak & React Frontend
 
 ## 📌 Key Modifications
