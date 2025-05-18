@@ -65,14 +65,14 @@ services:
 ### 4. React Configuration
 
 ```javascript
-// Use this for development
+// Use this for development.
 const keycloak = new Keycloak({
   url: "http://localhost:8080/",
   realm: "Micro-Service",
   clientId: "springboot-app",
 });
 
-// Or for containerized deployment
+// Or for containerized deployment.
 const keycloak = new Keycloak({
   url: "http://keycloak:8080/",
   realm: "Micro-Service",
@@ -116,18 +116,19 @@ spring:
 For any assistance with this implementation, please reach out to:
 
 **Varun Kadam**  
-📧 [kadamvarun94@gmail.com](mailto:kadamvarun94@gmail.com)  
+📧 [kadamvarun94@gmail.com](mailto:kadamvarun94@gmail.com)
 
 ### We welcome:
+
 - 🐛 **Bug reports** - Help improve stability
 - 💡 **Implementation questions** - Clarifications on setup
 - ✨ **Enhancement suggestions** - Feature improvements
 - 🔒 **Security recommendations** - Vulnerability reports
 
 ### Preferred contact methods:
+
 1. Email for detailed technical queries
 2. GitHub Issues for bug tracking
 3. Pull Requests for code contributions
 
 ---
-
