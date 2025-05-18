@@ -1,8 +1,20 @@
+Here's the updated README.md file incorporating your changes and explaining the host file modifications:
+
 # 🔐 Spring Boot OAuth2 Integration with Keycloak & React Frontend
 
-This project demonstrates a full-stack application using **Spring Boot** and **React**, secured with **Keycloak (OAuth2)**. The setup utilizes Docker to containerize Keycloak and PostgreSQL, with the backend acting as an OAuth2 resource server and the frontend integrating with Keycloak for login/logout.
+## 📌 Key Modifications
 
----
+### Hosts File Update
+
+I added `127.0.0.1 keycloak` to the Windows hosts file to:
+
+- Resolve container-to-container communication issues
+- Ensure consistent hostname resolution between:
+  - Browser (host machine)
+  - React app (host machine)
+  - API Gateway (container)
+  - Other microservices (containers)
+- Maintain identical JWT issuer validation across all components
 
 ## 🚀 Stack Overview
 
@@ -12,109 +24,110 @@ This project demonstrates a full-stack application using **Spring Boot** and **R
 - **React** (Frontend with Keycloak JS adapter)
 - **Docker Compose** (Container orchestration)
 
----
+## 🛠️ Updated Setup Instructions
 
-## 🧩 Application Structure
+### 1. System Preparation
 
-### Backend (Spring Boot)
+#### Windows Hosts File Modification
 
-- **SecurityConfig.java**: Configures Spring Security to act as an OAuth2 resource server, validating JWT tokens issued by Keycloak.
-- **application.properties**: Contains configurations for the resource server, including issuer URI and JWK set URI for JWT validation.
+1. Open Notepad as Administrator
+2. Edit `C:\Windows\System32\drivers\etc\hosts`
+3. Add this line:
+   ```
+   127.0.0.1 keycloak
+   ```
+4. Save the file and flush DNS:
+   ```bash
+   ipconfig /flushdns
+   ```
 
-### Frontend (React)
+### 2. Docker Configuration
 
-- **keycloak.js**: Initializes the Keycloak instance with the realm and client configurations.
-- **authcontext.js**: Provides authentication context to the application, managing login state and token handling.
-- **apiService.js**: Contains functions to interact with the backend API, attaching the JWT token to requests for authentication.
-- **App.js**: Main application component that renders UI based on authentication state and fetches data from the backend.
+Updated `docker-compose.yml` now includes:
 
-### Docker Setup
-
-- **docker-compose.yml**: Defines services for PostgreSQL and Keycloak, setting up the necessary environment variables and volumes for persistent storage.
-
----
-
-## 🖼️ Architectural Diagram
-
-```mermaid
-    A[User] -->|Login| B[React App]
-    B -->|Redirect to| C[Keycloak]
-    C -->|Return Token| B
-    B -->|Attach Token| D[Spring Boot Backend]
-    D -->|Validate Token| C
-    D -->|Fetch Data| E[PostgreSQL]
-    E -->|Return Data| D
-    D -->|Return Data| B
-    B -->|Display Data| A
+```yaml
+services:
+  keycloak:
+    hostname: keycloak
+    environment:
+      KC_HOSTNAME: keycloak
+      KC_HOSTNAME_STRICT: "false"
+    ports:
+      - "8080:8080"
 ```
 
----
+### 3. Keycloak Access Points
 
-## 🔁 Authentication Flow
+- **From host machine**: `http://localhost:8080`
+- **From containers**: `http://keycloak:8080`
+- **JWT issuer**: `http://keycloak:8080/realms/Micro-Service`
 
-1. **User Login**: The user accesses the React application and is redirected to Keycloak for authentication.
-2. **Token Retrieval**: Upon successful login, Keycloak redirects back to the React app with an access token.
-3. **Token Storage**: The React app stores the access token and includes it in the Authorization header for subsequent API requests.
-4. **Backend Validation**: The Spring Boot backend validates the JWT token with Keycloak's public keys.
-5. **Data Fetching**: Upon successful validation, the backend fetches data from PostgreSQL and returns it to the React app.
-6. **Data Display**: The React app displays the fetched data to the user.
+### 4. React Configuration
 
----
+```javascript
+// Use this for development
+const keycloak = new Keycloak({
+  url: "http://localhost:8080/",
+  realm: "Micro-Service",
+  clientId: "springboot-app",
+});
 
-## 🛠️ Setup Instructions
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/varun29802/Keycloak-OAuth2-With-Springboot.git
-cd Keycloak-OAuth2-With-Springboot
+// Or for containerized deployment
+const keycloak = new Keycloak({
+  url: "http://keycloak:8080/",
+  realm: "Micro-Service",
+  clientId: "springboot-app",
+});
 ```
 
-### 2. Start Docker Containers
+### 5. API Gateway Configuration
 
-```bash
-docker-compose up -d
+```yaml
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://keycloak:8080/realms/Micro-Service
 ```
 
-This command will start PostgreSQL and Keycloak containers in detached mode.
+## 🌟 Why These Changes?
 
-### 3. Configure Keycloak
+1. **Consistent Networking**:
 
-- Access Keycloak at [http://localhost:8080](http://localhost:8080).
-- Create a new realm named `Micro-Service`.
-- Create a new client named `springboot-app` with the appropriate settings (e.g., public client, valid redirect URIs).
-- Define roles and users as needed.
+   - All services now resolve `keycloak` to the same endpoint
+   - Eliminates JWT validation errors due to issuer mismatch
 
-### 4. Configure Spring Boot Backend
+2. **Development Flexibility**:
 
-- Update the `application.properties` file with the correct issuer URI and JWK set URI from your Keycloak setup.
+   - Works seamlessly in both development and containerized environments
+   - Supports local testing while maintaining production parity
 
-### 5. Configure React Frontend
+3. **Simplified Configuration**:
+   - Single hostname used across all services
+   - No environment-specific configurations needed
 
-- Update the `keycloak.js` file with the correct Keycloak server URL, realm, and client ID.
+## 🔄 Updated Authentication Flow
 
-### 6. Run the Applications
+![Authentication Flow Diagram](./Work_flow_Application.png)
 
-- Start the Spring Boot backend:
+## 💡 Support & Contact
 
-  ```bash
-  ./mvnw spring-boot:run
-  ```
+For any assistance with this implementation, please reach out to:
 
-- Start the React frontend:
+**Varun Kadam**  
+📧 [kadamvarun94@gmail.com](mailto:kadamvarun94@gmail.com)  
 
-  ```bash
-  npm start
-  ```
+### We welcome:
+- 🐛 **Bug reports** - Help improve stability
+- 💡 **Implementation questions** - Clarifications on setup
+- ✨ **Enhancement suggestions** - Feature improvements
+- 🔒 **Security recommendations** - Vulnerability reports
 
-Access the frontend at [http://localhost:5173](http://localhost:5173).
-
----
-
-## 📚 Additional Resources
-
-- [Keycloak Documentation](https://www.keycloak.org/documentation)
-- [Spring Security OAuth2 Resource Server](https://docs.spring.io/spring-security/site/docs/current/reference/html5/#oauth2resourceserver)
-- [React Keycloak JS Adapter](https://www.npmjs.com/package/keycloak-js)
+### Preferred contact methods:
+1. Email for detailed technical queries
+2. GitHub Issues for bug tracking
+3. Pull Requests for code contributions
 
 ---
+
