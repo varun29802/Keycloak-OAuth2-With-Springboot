@@ -77,3 +77,9 @@ export const getServiceBDataFromA = async () => {
   const response = await apiAxios.get("/service-b/service-Adata");
   return response.data;
 };
+
+// New method to get product data
+export const getProductData = async () => {
+  const response = await apiAxios.get("/service-a/products/laptop");
+  return response.data;
+};

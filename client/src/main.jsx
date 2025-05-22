@@ -6,10 +6,19 @@ import { AuthProvider } from "./config/authcontext.jsx";
 import { Toaster } from "react-hot-toast";
 
 createRoot(document.getElementById("root")).render(
-  <>
+  <StrictMode>
     <AuthProvider>
       <App />
     </AuthProvider>
-    <Toaster />
-  </>
+    <Toaster
+      position="top-right"
+      toastOptions={{
+        duration: 5000,
+        style: {
+          background: "#363636",
+          color: "#fff",
+        },
+      }}
+    />
+  </StrictMode>
 );

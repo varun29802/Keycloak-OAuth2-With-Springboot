@@ -1,6 +1,14 @@
 version: '3.8'
 
 services:
+  redis-cache:
+    image: redis
+    container_name: redis-cache
+    ports:
+      - "6379:6379"
+    networks:
+      - keycloak-net
+    restart: always
   postgres:
     image: postgres:15-alpine
     environment:
@@ -11,7 +19,7 @@ services:
     volumes:
       - /home/varun/keycloak_volumes/pgdata:/var/lib/postgresql/data
     networks:
-      - keycloak-net
+     - keycloak-net
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U keycloak"]
       interval: 5s
@@ -71,3 +79,5 @@ volumes:
 networks:
   keycloak-net:
     external: true
+  spring-net:
+    external: true 

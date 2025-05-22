@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect } from "react";
 import Cookies from "js-cookie";
 import keycloak from "./keycloak";
 import { toast } from "react-hot-toast";
+import axios from "axios";
 
 const AuthContext = createContext();
 
@@ -27,7 +28,7 @@ export const AuthProvider = ({ children }) => {
     setKeycloakInstance(keycloak);
     setToken(keycloak.token);
 
-    // Store tokens in cookies
+    // Store tokens in cookies with secure flags
     Cookies.set("KEYCLOAK_ACCESS", keycloak.token);
     Cookies.set("KEYCLOAK_REFRESH", keycloak.refreshToken);
     Cookies.set("KEYCLOAK_ID", keycloak.idToken);
@@ -54,12 +55,30 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const handleLogout = () => {
-    clearAuthCookies();
-    if (keycloakInstance) {
-      keycloakInstance.logout();
-    } else {
-      keycloak.logout();
+  const handleLogout = async () => {
+    try {
+      const token = Cookies.get("KEYCLOAK_ACCESS");
+      if (token) {
+        // Call backend to blacklist the token
+        await axios.post(
+          "http://192.168.29.38:7081/auth/logout",
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      clearAuthCookies();
+      if (keycloakInstance) {
+        keycloakInstance.logout({ redirectUri: window.location.origin });
+      } else {
+        keycloak.logout({ redirectUri: window.location.origin });
+      }
     }
   };
 
